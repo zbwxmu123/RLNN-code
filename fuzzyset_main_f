@@ -40,22 +40,8 @@ test=[round(0.7*n)+1:n];
       fuzzyset_run_tri(nx_t,y_t,nx_te,y_te,c,h,SR);
      end
      tt_r(q)=toc;   
-     tic;
-     parfor k=1:rep_n  
-      [Q1_2(k,q),Q2_2(k,q)] =  ...
-      fuzzyset_EML(nx_t,y_t,nx_te,y_te,c,h,SR);
-     end
-     tt_EML(q)=toc;    
-     tic;
-     [Q1_opt(q),Q2_opt(q)]...
-     = run_GA(nx_t,y_t,nx_te,y_te,c,h,SR);    
-     tt_opt(q)=toc;
     end
 [Q1_r,index1]=min(Q1_1);
-Q1_r_ave=mean(Q1_1);
-Q2_r_ave=mean(Q2_1);
-[Q1_EML,index2]=min(Q1_2);
 for k=1:5
     Q2_r(k)=Q2_1(index1(k),k);
-    Q2_EML(k)=Q2_2(index2(k),k);
 end
