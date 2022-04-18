@@ -1,0 +1,31 @@
+function [Q1_R,Q2_R,r] = fuzzyset_run_tri(nx_t,y_t,nx_te,y_te,c,h,SR)
+nx=nx_t;
+y=y_t;
+[n,m]=size(nx_t);
+m=m/c;
+r=[randi(n,h,1),randi(3,h,m)];
+while min(max(r(:,2:m+1)'))<2
+    r=[randi(n,h,1),randi(3,h,m)];
+end
+w=ones(h,m*c);
+for i=1:h
+    for j=1:m
+        ru(i,j)=SR(r(i,1),j,r(i,j+1));
+        if ru(i,j)>0
+            w(i,(j-1)*c+ru(i,j))=0;
+        end
+    end
+end
+xx=reshape(ru',1,[]);
+meany=zeros(1,h);
+n1=size(nx_te,1);
+for i=1:h
+    z(:,i)=(min([(nx(:,w(i,:)==0))';ones(1,n)]))'+1e-6;
+    z1(:,i)=(min([(nx_te(:,w(i,:)==0))';ones(1,n1)]))'+1e-6;
+end
+meany=z'*y./sum(z',2);
+pre_y=z*meany./sum(z,2);  
+Q1_R=(sum((pre_y-y).^2)/n)^0.5;
+pre_y1=z1*meany./sum(z1,2);       
+Q2_R=(sum((pre_y1-y_te).^2)/n1)^0.5;
+end
