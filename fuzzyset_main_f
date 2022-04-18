@@ -1,0 +1,61 @@
+clear
+clc
+load('autompg.mat');
+[n,m]=size(x);
+randindex=randperm(n);
+x=x(randindex,:);
+y=y(randindex,:);
+rep_n=10000;
+c=3;
+b=0.2:0.2:1;
+train=[1:round(0.7*n)];
+test=[round(0.7*n)+1:n];
+    nx=[];
+    A=zeros(n,c,m);
+    parfor k=1:m
+       A(:,:,k)=fuzzyset_gra(x(:,k),c);
+    end
+    nx=reshape(A,n,c*m);
+    nx_t=nx(train,:);
+    nx_te=nx(test,:);
+    y_t=y(train,:);
+    n1=length(y_t);
+    y_te=y(test,:);
+    SR=zeros(n1,m,3);
+   parfor i=1:n1
+        for j=1:m
+            SR1(i,j)=0;
+            SR2(i,j)=find(nx_t(i,1+(j-1)*c:j*c)>0,1,'first');
+            SR3(i,j)=find(nx_t(i,1+(j-1)*c:j*c)>0,1,'last');
+        end
+    end
+    SR(:,:,1)=SR1;
+    SR(:,:,2)=SR2;
+    SR(:,:,3)=SR3;
+    for q=1:length(b)  
+     h=round(b(q)*c*m);    
+     tic;
+     parfor k=1:rep_n  
+      [Q1_1(k,q),Q2_1(k,q)] =  ...
+      fuzzyset_run_tri(nx_t,y_t,nx_te,y_te,c,h,SR);
+     end
+     tt_r(q)=toc;   
+     tic;
+     parfor k=1:rep_n  
+      [Q1_2(k,q),Q2_2(k,q)] =  ...
+      fuzzyset_EML(nx_t,y_t,nx_te,y_te,c,h,SR);
+     end
+     tt_EML(q)=toc;    
+     tic;
+     [Q1_opt(q),Q2_opt(q)]...
+     = run_GA(nx_t,y_t,nx_te,y_te,c,h,SR);    
+     tt_opt(q)=toc;
+    end
+[Q1_r,index1]=min(Q1_1);
+Q1_r_ave=mean(Q1_1);
+Q2_r_ave=mean(Q2_1);
+[Q1_EML,index2]=min(Q1_2);
+for k=1:5
+    Q2_r(k)=Q2_1(index1(k),k);
+    Q2_EML(k)=Q2_2(index2(k),k);
+end
